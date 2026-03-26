@@ -1,0 +1,87 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "PersonalFinanceSystem.API | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/"
+    }
+  ],
+  "paths": {
+    "/weatherforecast": {
+      "get": {
+        "tags": [
+          "PersonalFinanceSystem.API"
+        ],
+        "operationId": "GetWeatherForecast",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "WeatherForecast": {
+        "required": [
+          "date",
+          "temperatureC",
+          "summary"
+        ],
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "Дата прогнозу.",
+            "format": "date"
+          },
+          "temperatureC": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Температура у градусах Цельсія.",
+            "format": "int32"
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Текстовий опис погодних умов."
+          },
+          "temperatureF": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "description": "Температура у градусах Фаренгейта (обчислюється автоматично).",
+            "format": "int32"
+          }
+        },
+        "description": "Модель, що представляє прогноз погоди на певний день."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "PersonalFinanceSystem.API"
+    }
+  ]
+}

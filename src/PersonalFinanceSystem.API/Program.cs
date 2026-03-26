@@ -19,6 +19,14 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
+/// <summary>
+/// Отримує прогноз погоди на найближчі 5 днів.
+/// </summary>
+/// <remarks>
+/// Цей метод генерує випадкові дані. 
+/// Використовується як базова перевірка працездатності API для системи особистих фінансів.
+/// </remarks>
+/// <returns>Список об'єктів з прогнозом погоди.</returns>
 app.MapGet("/weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>
@@ -35,7 +43,16 @@ app.MapGet("/weatherforecast", () =>
 
 app.Run();
 
+/// <summary>
+/// Модель, що представляє прогноз погоди на певний день.
+/// </summary>
+/// <param name="Date">Дата прогнозу.</param>
+/// <param name="TemperatureC">Температура у градусах Цельсія.</param>
+/// <param name="Summary">Текстовий опис погодних умов.</param>
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
+    /// <summary>
+    /// Температура у градусах Фаренгейта (обчислюється автоматично).
+    /// </summary>
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
