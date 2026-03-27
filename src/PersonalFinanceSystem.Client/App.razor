@@ -1,6 +1,19 @@
-﻿<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-</Router>
+﻿<NotFound>
+    <PageTitle>Сторінку не знайдено</PageTitle>
+    <LayoutView Layout="@typeof(MainLayout)">
+        <div style="text-align: center; padding: 50px; font-family: sans-serif;">
+            <h1 style="font-size: 80px; color: #e53e3e; margin-bottom: 0;">404</h1>
+            <h2 style="color: #2d3748;">Ой! Сторінку не знайдено</h2>
+            <p style="color: #718096; max-width: 400px; margin: 20px auto;">
+                Вибачте, але за адресою <strong>@NavigationManager.Uri.Split('/').Last()</strong> нічого немає.
+            </p>
+            <a href="/" style="display: inline-block; background: #3182ce; color: white; padding: 10px 25px; border-radius: 5px; text-decoration: none; font-weight: bold;">
+                Повернутися на головну
+            </a>
+        </div>
+    </LayoutView>
+</NotFound>
+
+@code {
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+}
