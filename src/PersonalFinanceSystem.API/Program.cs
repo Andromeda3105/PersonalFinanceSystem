@@ -1,58 +1,85 @@
+using Serilog;
+
+using PersonalFinanceSystem.API.Middleware;
+
+// Налаштування початкового логування Serilog (до запуску хоста)
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/finance-api-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Інтеграція Serilog у систему логування ASP.NET Core
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext());
+
+// Додавання сервісів у контейнер (Swagger/OpenAPI)
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-    app.MapOpenApi();
+    Log.Information("Запуск застосунку Personal Finance API...");
+
+    var app = builder.Build();
+
+    // Реєстрація кастомного Middleware для глобальної обробки помилок
+    app.UseMiddleware<ExceptionMiddleware>();
+
+    // Налаштування конвеєра HTTP-запитів
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+    }
+
+    app.UseHttpsRedirection();
+
+    // Масив даних для тестового ендпоінту
+    var summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
+    /// <summary>
+    /// Отримує прогноз погоди на найближчі 5 днів.
+    /// Використовується для діагностики працездатності API.
+    /// </summary>
+    app.MapGet("/weatherforecast", () =>
+    {
+        var forecast = Enumerable.Range(1, 5).Select(index =>
+            new WeatherForecast
+            (
+                DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                Random.Shared.Next(-20, 55),
+                summaries[Random.Shared.Next(summaries.Length)]
+            ))
+            .ToArray();
+
+        Log.Information("Запит на прогноз погоди успішно оброблено.");
+        return forecast;
+    })
+    .WithName("GetWeatherForecast");
+
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Критична помилка: Застосунок не зміг запуститися!");
+}
+finally
+{
+    Log.Information("Зупинка застосунку Personal Finance API...");
+    Log.CloseAndFlush();
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
 /// <summary>
-/// Отримує прогноз погоди на найближчі 5 днів.
+/// Модель даних для прогнозу погоди.
 /// </summary>
-/// <remarks>
-/// Цей метод генерує випадкові дані. 
-/// Використовується як базова перевірка працездатності API для системи особистих фінансів.
-/// </remarks>
-/// <returns>Список об'єктів з прогнозом погоди.</returns>
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-/// <summary>
-/// Модель, що представляє прогноз погоди на певний день.
-/// </summary>
-/// <param name="Date">Дата прогнозу.</param>
-/// <param name="TemperatureC">Температура у градусах Цельсія.</param>
-/// <param name="Summary">Текстовий опис погодних умов.</param>
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
-    /// <summary>
-    /// Температура у градусах Фаренгейта (обчислюється автоматично).
-    /// </summary>
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
